@@ -25,7 +25,6 @@
 #include <zconf.h>
 
 #include "opencv2/opencv.hpp"
-
 #include "NativeCamera.h"
 #include "LOG.h"
 
@@ -142,53 +141,49 @@ void imageAvailableCallback(void* context, AImageReader* reader)
     if(status != AMEDIA_OK || image == nullptr)
         return;
 
-    // Try to process data without blocking the callback
-    std::thread processor([=](){
+    uint8_t *data = nullptr;
+    int len = 0;
+    AImage_getPlaneData(image, 0, &data, &len);
 
-        uint8_t *data = nullptr;
-        int len = 0;
-        AImage_getPlaneData(image, 0, &data, &len);
+    int width = 0, height = 0;
+    AImage_getWidth(image, &width);
+    AImage_getHeight(image, &height);
+    LOGD("w = %d, h = %d", width, height);
 
-        int width = 0, height = 0;
-        AImage_getWidth(image, &width);
-        AImage_getHeight(image, &height);
-        LOGD("w = %d, h = %d", width, height);
+    // convert src image YUV -> RGBA
+    cv::Mat src(height + height/2, width, CV_8UC1, data);
+    cv::cvtColor(src, src, cv::COLOR_YUV2RGBA_NV21);
 
-        // convert src image YUV -> RGBA
-        cv::Mat src(height + height/2, width, CV_8UC1, data);
-        cv::cvtColor(src, src, CV_YUV2RGBA_NV21);
+    int matType = CV_8UC4;
+    src.convertTo(src, matType);
 
-        int matType = CV_8UC4;
-        src.convertTo(src, matType);
+    // 윈도우의 버퍼 포인터를 얻는다
+    ANativeWindow_setBuffersGeometry(drawWindow, width, height, WINDOW_FORMAT_RGBA_8888 /*format unchanged*/);
+    ANativeWindow_Buffer buf;
+    if (int32_t err = ANativeWindow_lock(drawWindow, &buf, nullptr))
+    {
+        LOGE("ANativeWindow_lock failed with error code %d\n", err);
+        return;
+    }
+    cv::Mat dst(buf.height, buf.width, matType, buf.bits);
 
-        // 윈도우의 버퍼 포인터를 얻는다
-        ANativeWindow_setBuffersGeometry(drawWindow, width, height, WINDOW_FORMAT_RGBA_8888 /*format unchanged*/);
-        ANativeWindow_Buffer buf;
-        if (int32_t err = ANativeWindow_lock(drawWindow, &buf, nullptr))
-        {
-            LOGE("ANativeWindow_lock failed with error code %d\n", err);
-            return;
-        }
-        cv::Mat dst(buf.height, buf.width, matType, buf.bits);
+    // copy to data to surfaceview
+    uchar *dbuf = dst.data;
+    uchar *sbuf = src.data;
 
-        // copy to data to surfaceview
-        uchar *dbuf = dst.data;
-        uchar *sbuf = src.data;
+    for (int i = 0; i < src.rows; i++)
+    {
+        dbuf = dst.data + i * buf.width * dst.channels();
+        memcpy(dbuf, sbuf, src.cols * dst.channels());
+        sbuf += src.cols * dst.channels();
+    }
 
-        for (int i = 0; i < src.rows; i++)
-        {
-            dbuf = dst.data + i * buf.width * dst.channels();
-            memcpy(dbuf, sbuf, src.cols * dst.channels());
-            sbuf += src.cols * dst.channels();
-        }
+    // Process data here
+    AImage_delete(image);
 
-        // Process data here
-        AImage_delete(image);
+    // 윈도우 락 풀어주기
+    ANativeWindow_unlockAndPost(drawWindow);
 
-        // 윈도우 락 풀어주기
-        ANativeWindow_unlockAndPost(drawWindow);
-    });
-    processor.detach();
 }
 
 static void initCam()

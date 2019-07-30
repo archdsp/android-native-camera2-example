@@ -27,7 +27,7 @@ android {
     sourceSets {
         main {
             // let gradle pack the shared library into apk
-            jniLibs.srcDirs = ['src/main/JniLibs', 'src/main/cpp']
+            jniLibs.srcDirs = ['src/main/jni_libs', 'src/main/cpp']
         }
     }
     externalNativeBuild {
@@ -44,5 +44,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation project(':openCVLibrary342')
 }

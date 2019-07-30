@@ -1,23 +1,19 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
-
-set(PROJNAME NativeCamAndOpenCV)
-set(pathOPENCV /home/dsparch/Android/OpenCV-android-sdk)
-set(pathPROJECT /home/dsparch/AndroidStudioProjects/${PROJNAME})
-set(pathLIBOPENCV_JAVA ${pathPROJECT}/app/src/main/JniLibs/${ANDROID_ABI}/libopencv_java3.so)
 set(CMAKE_VERBOSE_MAKEFILE on)
+set(ANDROID_STL "c++_shared")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
-include_directories(${pathOPENCV}/sdk/native/jni/include)
-include_directories(${pathPROJECT}/app/src/main/cpp/)
+set(PROJECT_NAME native_camera)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
+set(PATH_PROJECT /home/dsparch/Project/${PROJECT_NAME})
+set(PATH_LIB_OPENCV ${PATH_PROJECT}/3rdparty_libraries/libraries/OpenCV-4.1.1/libs/${ANDROID_ABI}/libopencv_java4.so)
+
+# OpenCV-4.1.1 include
+include_directories(${PATH_PROJECT}/3rdparty_libraries/include)
+
+include_directories(${PATH_PROJECT}/app/src/main/cpp/)
+
+## EXAMPLE OF add_library
 #add_library( # Sets the name of the library.
 #             native-lib
 
@@ -28,17 +24,11 @@ include_directories(${pathPROJECT}/app/src/main/cpp/)
 #             src/main/cpp/native-lib.cpp )
 
 add_library( lib_opencv SHARED IMPORTED )
-set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${pathLIBOPENCV_JAVA})
+set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${PATH_LIB_OPENCV})
 
 add_library(native-camera2-jni SHARED
             src/main/cpp/NativeCamera.cpp)
 
-
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
 
 find_library( # Sets the name of the path variable.
               log-lib
@@ -47,12 +37,8 @@ find_library( # Sets the name of the path variable.
               # you want CMake to locate.
               log )
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
-
-target_link_libraries( # Specifies the target library.
-
+target_link_libraries(
+        # Specifies the target library.
         native-camera2-jni
         -landroid
         -ljnigraphics

@@ -3,8 +3,6 @@ package sciomagelab.nativecamandopencv;
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.SurfaceTexture;
-import android.opengl.GLES20;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -17,12 +15,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-
-import static android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
-import static android.opengl.GLES20.GL_TEXTURE_2D;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -30,30 +22,16 @@ public class MainActivity extends AppCompatActivity
      * Member define
      ***************************************************/
 
-    private static final String TAG = "mars";
-    private LoaderCallbackInterface loaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
-
+    private static final String TAG = "sciomagelab";
     Surface frameSurface;
 
     // UI Component
     private SurfaceView mSurfaceView;
 
     // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("opencv_java3");
+    static
+    {
+        System.loadLibrary("opencv_java4");
         System.loadLibrary("native-camera2-jni");
     }
 
@@ -82,7 +60,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-///                startPreview(holder.getSurface());
+                startPreview(holder.getSurface());
             }
 
             @Override
@@ -95,20 +73,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPause() {
+
         super.onPause();
+        stopPreview();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "onResume :: Internal OpenCV library not found.");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCallback);
-        } else {
-            Log.d(TAG, "onResum :: OpenCV library found inside package. Using it!");
-            loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
     }
 
     public void onDestroy()
