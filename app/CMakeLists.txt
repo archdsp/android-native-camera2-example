@@ -3,7 +3,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 set(ANDROID_STL "c++_shared")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
-set(PROJECT_NAME native_camera)
+set(PROJECT_NAME isp-helper)
 
 set(PATH_PROJECT /home/dsparch/Project/${PROJECT_NAME})
 set(PATH_LIB_OPENCV ${PATH_PROJECT}/3rdparty_libraries/libraries/OpenCV-4.1.1/libs/${ANDROID_ABI}/libopencv_java4.so)

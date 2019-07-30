@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "sciomagelab.nativecamandopencv"
+        applicationId "sciomagelab.isp_helper"
         minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
@@ -22,6 +22,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            jniDebuggable = true
+        }
+        debug {
+            jniDebuggable = true
         }
     }
     sourceSets {

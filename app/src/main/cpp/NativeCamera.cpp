@@ -152,10 +152,11 @@ void imageAvailableCallback(void* context, AImageReader* reader)
 
     // convert src image YUV -> RGBA
     cv::Mat src(height + height/2, width, CV_8UC1, data);
-    cv::cvtColor(src, src, cv::COLOR_YUV2RGBA_NV21);
+    cv::Mat img;
 
-    int matType = CV_8UC4;
-    src.convertTo(src, matType);
+    // Do image processing
+    cv::cvtColor(src, img, cv::COLOR_YUV2GRAY_NV21);
+    cv::cvtColor(img, img, cv::COLOR_GRAY2RGBA);
 
     // 윈도우의 버퍼 포인터를 얻는다
     ANativeWindow_setBuffersGeometry(drawWindow, width, height, WINDOW_FORMAT_RGBA_8888 /*format unchanged*/);
@@ -165,17 +166,18 @@ void imageAvailableCallback(void* context, AImageReader* reader)
         LOGE("ANativeWindow_lock failed with error code %d\n", err);
         return;
     }
-    cv::Mat dst(buf.height, buf.width, matType, buf.bits);
+
+    cv::Mat dst(buf.height, buf.width, CV_8UC4, buf.bits);
 
     // copy to data to surfaceview
     uchar *dbuf = dst.data;
-    uchar *sbuf = src.data;
+    uchar *ibuf = img.data;
 
-    for (int i = 0; i < src.rows; i++)
+    for (int i = 0; i < img.rows; i++)
     {
         dbuf = dst.data + i * buf.width * dst.channels();
-        memcpy(dbuf, sbuf, src.cols * dst.channels());
-        sbuf += src.cols * dst.channels();
+        memcpy(dbuf, ibuf, img.cols * img.channels());
+        ibuf += img.cols * img.channels();
     }
 
     // Process data here
@@ -183,7 +185,6 @@ void imageAvailableCallback(void* context, AImageReader* reader)
 
     // 윈도우 락 풀어주기
     ANativeWindow_unlockAndPost(drawWindow);
-
 }
 
 static void initCam()
@@ -298,17 +299,17 @@ static void PrintCameraResolution()
 
 
 extern "C"
-JNIEXPORT void JNICALL
-Java_sciomagelab_nativecamandopencv_MainActivity_startPreview(JNIEnv *env, jclass type,
-                                                              jobject surface)
 {
-    initCam();
-    initSurface(env, surface);
-}
+    JNIEXPORT void JNICALL
+    Java_sciomagelab_isp_MainActivity_startPreview(JNIEnv *env, jclass type,
+                                                              jobject surface){
+        initCam();
+        initSurface(env, surface);
+    }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_sciomagelab_nativecamandopencv_MainActivity_stopPreview(JNIEnv *env, jclass type)
-{
-    exitCam();
+    JNIEXPORT void JNICALL
+    Java_sciomagelab_isp_MainActivity_stopPreview(JNIEnv *env, jclass type)
+    {
+        exitCam();
+    }
 }

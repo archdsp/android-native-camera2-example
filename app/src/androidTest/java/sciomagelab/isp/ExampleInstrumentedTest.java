@@ -1,4 +1,4 @@
-package sciomagelab.nativecamandopencv;
+package sciomagelab.isp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("sciomagelab.nativecamandopencv", appContext.getPackageName());
+        assertEquals("sciomagelab.sciomagelab.isp", appContext.getPackageName());
     }
 }

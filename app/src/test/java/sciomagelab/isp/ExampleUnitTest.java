@@ -1,4 +1,4 @@
-package sciomagelab.nativecamandopencv;
+package sciomagelab.isp;
 
 import org.junit.Test;
 
